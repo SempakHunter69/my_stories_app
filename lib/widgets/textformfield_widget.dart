@@ -41,7 +41,7 @@ class CustomTextFormField extends StatelessWidget {
             child: TextFormField(
               controller: textEditingController,
               keyboardType: textInputType,
-              obscureText: false,
+              obscureText: obscure,
               decoration: InputDecoration.collapsed(hintText: hintText),
               validator: (value) {
                 if (value == null || value.trim().isEmpty) {

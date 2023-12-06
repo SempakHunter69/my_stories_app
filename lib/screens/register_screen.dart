@@ -2,7 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:my_stories_app/common/styles.dart';
+import 'package:my_stories_app/provider/user_provider.dart';
 import 'package:my_stories_app/widgets/textformfield_widget.dart';
+import 'package:provider/provider.dart';
 
 class RegisterScreen extends StatefulWidget {
   final Function() goLogin;
@@ -53,7 +55,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 30),
                 CustomTextFormField(
-                  textEditingController: emailController,
+                  textEditingController: nameController,
                   title: 'Nama',
                   hintText: 'Masukkan nama lengkap anda',
                   textInputType: TextInputType.text,
@@ -82,12 +84,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 SizedBox(
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Register',
-                      style:
-                          myTextTheme.headline4!.copyWith(color: Colors.white),
-                    ),
+                    onPressed: () => _onRegister(),
+                    child: context.watch<UserProvider>().isRegister
+                        ? const CircularProgressIndicator()
+                        : Text(
+                            'Register',
+                            style: myTextTheme.headline4!
+                                .copyWith(color: Colors.white),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -119,6 +123,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
         ),
       )),
+    );
+  }
+
+  _onRegister() async {
+    final ScaffoldMessengerState scaffoldMessengerState =
+        ScaffoldMessenger.of(context);
+    final userProvider = context.read<UserProvider>();
+    await userProvider.registerUser(
+      nameController.text,
+      emailController.text,
+      passwordController.text,
+    );
+    scaffoldMessengerState.showSnackBar(
+      SnackBar(content: Text(userProvider.message)),
     );
   }
 }

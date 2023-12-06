@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:my_stories_app/common/styles.dart';
+import 'package:my_stories_app/data/api/api_service.dart';
+import 'package:my_stories_app/provider/user_provider.dart';
 import 'package:my_stories_app/routes/router_delegate.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -30,26 +33,33 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'My Stories',
-      theme: ThemeData(
-        colorScheme: Theme.of(context).colorScheme.copyWith(
-              primary: primaryYellow,
-              onPrimary: primaryYellow2,
-              secondary: primaryDark,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (context) => UserProvider(ApiService()),
+        )
+      ],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'My Stories',
+        theme: ThemeData(
+          colorScheme: Theme.of(context).colorScheme.copyWith(
+                primary: primaryYellow,
+                onPrimary: primaryYellow2,
+                secondary: primaryDark,
+              ),
+          textTheme: myTextTheme,
+          visualDensity: VisualDensity.adaptivePlatformDensity,
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: primaryYellow2,
             ),
-        textTheme: myTextTheme,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: primaryYellow2,
           ),
         ),
-      ),
-      home: Router(
-        routerDelegate: myRouterDelegate,
-        backButtonDispatcher: RootBackButtonDispatcher(),
+        home: Router(
+          routerDelegate: myRouterDelegate,
+          backButtonDispatcher: RootBackButtonDispatcher(),
+        ),
       ),
     );
   }

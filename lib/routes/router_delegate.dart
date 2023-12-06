@@ -14,6 +14,7 @@ class MyRouterDelegate extends RouterDelegate
   bool isRegister = false;
   bool isLogIn = false;
   bool _isOnboarding = false;
+  bool _isHome = false;
   List<Page> historyStack = [];
 
   set isOnboarding(bool value) {
@@ -65,10 +66,11 @@ class MyRouterDelegate extends RouterDelegate
               },
             ),
           ),
-        MaterialPage(
-            child: HomeScreen(
-          key: const ValueKey('HomeScreen'),
-        ))
+        if (_isHome)
+          const MaterialPage(
+              child: HomeScreen(
+            key: ValueKey('HomeScreen'),
+          ))
       ],
       onPopPage: (route, result) {
         final didPop = route.didPop(result);
