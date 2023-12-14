@@ -2,14 +2,19 @@
 
 import 'package:flutter/material.dart';
 import 'package:my_stories_app/common/styles.dart';
+import 'package:my_stories_app/provider/preferences_provider.dart';
+import 'package:my_stories_app/provider/user_provider.dart';
 import 'package:my_stories_app/widgets/textformfield_widget.dart';
+import 'package:provider/provider.dart';
 
 class LoginScreen extends StatefulWidget {
   final Function() goRegister;
+  final Function() onLogin;
 
   const LoginScreen({
     super.key,
     required this.goRegister,
+    required this.onLogin,
   });
 
   @override
@@ -56,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintText: 'Masukkan email anda',
                   textInputType: TextInputType.emailAddress,
                   obscure: false,
-                  errorMessage: '',
+                  errorMessage: 'Harap masukkan email anda !',
                 ),
                 const SizedBox(height: 30),
                 CustomTextFormField(
@@ -65,18 +70,22 @@ class _LoginScreenState extends State<LoginScreen> {
                   hintText: 'Masukkan password anda',
                   textInputType: TextInputType.text,
                   obscure: true,
-                  errorMessage: '',
+                  errorMessage: 'Harap masukkan password anda !',
                 ),
                 const SizedBox(height: 30),
                 SizedBox(
                   width: MediaQuery.of(context).size.width,
                   child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Log In',
-                      style:
-                          myTextTheme.headline4!.copyWith(color: Colors.white),
-                    ),
+                    onPressed: () {
+                      _onLogin();
+                    },
+                    child: context.watch<UserProvider>().isLogin
+                        ? const CircularProgressIndicator()
+                        : Text(
+                            'Log In',
+                            style: myTextTheme.headline4!
+                                .copyWith(color: Colors.white),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 15),
@@ -109,5 +118,40 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       )),
     );
+  }
+
+  _onLogin() async {
+    final ScaffoldMessengerState scaffoldMessengerState =
+        ScaffoldMessenger.of(context);
+    if (formKey.currentState!.validate()) {
+      final userProvider = context.read<UserProvider>();
+      final preferencesProvider = context.read<PreferencesProvider>();
+      await userProvider.loginUser(
+        emailController.text,
+        passwordController.text,
+      );
+      //check if login was success
+      if (userProvider.loginRespose?.loginResult.token != null) {
+        widget.onLogin();
+        // Save token and show success message
+        // Print the token for debugging
+        print(
+            "Received token: ${userProvider.loginRespose!.loginResult.token}");
+
+        // Save the token
+        preferencesProvider
+            .saveToken(userProvider.loginRespose!.loginResult.token);
+
+        // Print a confirmation message
+        print("Token saved");
+        scaffoldMessengerState.showSnackBar(
+          SnackBar(content: Text(userProvider.message)),
+        );
+      } else {
+        scaffoldMessengerState.showSnackBar(
+          SnackBar(content: Text(userProvider.message)),
+        );
+      }
+    }
   }
 }

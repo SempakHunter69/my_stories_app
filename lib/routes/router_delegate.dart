@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:my_stories_app/data/model/stories_response.dart';
+import 'package:my_stories_app/data/preferences/preferences_helper.dart';
+import 'package:my_stories_app/screens/detail_screen.dart';
 import 'package:my_stories_app/screens/home_screen.dart';
 import 'package:my_stories_app/screens/login_screen.dart';
 import 'package:my_stories_app/screens/onboarding_screen.dart';
@@ -8,14 +11,87 @@ import 'package:my_stories_app/screens/splash_screen.dart';
 class MyRouterDelegate extends RouterDelegate
     with ChangeNotifier, PopNavigatorRouterDelegateMixin {
   final GlobalKey<NavigatorState> _navigatorKey;
+  final PreferencesHelper preferencesHelper;
 
-  MyRouterDelegate() : _navigatorKey = GlobalKey<NavigatorState>();
+  MyRouterDelegate(this.preferencesHelper)
+      : _navigatorKey = GlobalKey<NavigatorState>() {
+    _init();
+  }
+
+  _init() async {
+    isLogIn = await preferencesHelper.haveToken();
+    notifyListeners();
+  }
 
   bool isRegister = false;
-  bool isLogIn = false;
+  bool? isLogIn = false;
   bool _isOnboarding = false;
-  bool _isHome = false;
+  bool isHome = false;
   List<Page> historyStack = [];
+  Story? selectedStory;
+
+  List<Page> get _splashStack => [
+        const MaterialPage(
+            child: SplashScreen(
+          key: ValueKey('SplashScreen'),
+        ))
+      ];
+
+  List<Page> get _onBoardingStack => [
+        MaterialPage(
+            child: OnboardingScreen(
+          goLogin: () {
+            isLogIn = null;
+            notifyListeners();
+          },
+          key: const ValueKey('OnBoardingScreen'),
+        ))
+      ];
+
+  List<Page> get _loggoutStack => [
+        MaterialPage(
+            child: LoginScreen(
+          goRegister: () {
+            isRegister = true;
+            notifyListeners();
+          },
+          onLogin: () {
+            isLogIn = true;
+            notifyListeners();
+          },
+          key: const ValueKey('LoginScreen'),
+        )),
+        if (isRegister)
+          MaterialPage(
+              child: RegisterScreen(
+            goLogin: () {
+              isLogIn = null;
+              isRegister = false;
+              notifyListeners();
+            },
+            key: const ValueKey('RegisterScreen'),
+          ))
+      ];
+
+  List<Page> get _logginStack => [
+        MaterialPage(
+            child: HomeScreen(
+          isLogout: () {
+            isLogIn = null;
+            notifyListeners();
+          },
+          onTapped: (Story storyId) {
+            selectedStory = storyId;
+            notifyListeners();
+          },
+          key: const ValueKey('HomeScreen'),
+        )),
+        if (selectedStory != null)
+          MaterialPage(
+              child: DetailScreen(
+            story: selectedStory!,
+          ))
+      ];
 
   set isOnboarding(bool value) {
     _isOnboarding = value;
@@ -26,59 +102,25 @@ class MyRouterDelegate extends RouterDelegate
 
   @override
   Widget build(BuildContext context) {
+    if (isLogIn == true) {
+      historyStack = _logginStack;
+    } else if (isLogIn == null) {
+      historyStack = _loggoutStack;
+    } else if (isOnboarding) {
+      historyStack = _onBoardingStack;
+    } else {
+      historyStack = _splashStack;
+    }
     return Navigator(
       key: _navigatorKey,
-      pages: [
-        const MaterialPage(
-          child: SplashScreen(
-            key: ValueKey('SplashScreen'),
-          ),
-        ),
-        if (isOnboarding)
-          MaterialPage(
-            child: OnboardingScreen(
-              key: const ValueKey('OnboardingScreen'),
-              goLogin: () {
-                isLogIn = true;
-                notifyListeners();
-              },
-            ),
-          ),
-        if (isLogIn)
-          MaterialPage(
-            child: LoginScreen(
-              key: const ValueKey('LoginScreen'),
-              goRegister: () {
-                isRegister = true;
-                isLogIn = false;
-                notifyListeners();
-              },
-            ),
-          ),
-        if (isRegister)
-          MaterialPage(
-            child: RegisterScreen(
-              key: const ValueKey('RegisterScreen'),
-              goLogin: () {
-                isLogIn = true;
-                isRegister = false;
-                notifyListeners();
-              },
-            ),
-          ),
-        if (_isHome)
-          const MaterialPage(
-              child: HomeScreen(
-            key: ValueKey('HomeScreen'),
-          ))
-      ],
+      pages: historyStack,
       onPopPage: (route, result) {
         final didPop = route.didPop(result);
         if (!didPop) {
           return false;
         }
-        isLogIn = false;
         isRegister = false;
+        selectedStory = null;
         notifyListeners();
         return true;
       },

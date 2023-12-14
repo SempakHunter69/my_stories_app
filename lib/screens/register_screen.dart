@@ -60,7 +60,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hintText: 'Masukkan nama lengkap anda',
                   textInputType: TextInputType.text,
                   obscure: false,
-                  errorMessage: '',
+                  errorMessage: 'Harap masukkan nama anda !',
                 ),
                 const SizedBox(height: 30),
                 CustomTextFormField(
@@ -69,7 +69,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hintText: 'Masukkan Email anda',
                   textInputType: TextInputType.emailAddress,
                   obscure: false,
-                  errorMessage: '',
+                  errorMessage: 'Harap masukkan email anda !',
                 ),
                 const SizedBox(height: 30),
                 CustomTextFormField(
@@ -78,7 +78,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   hintText: 'Masukkan Password anda',
                   textInputType: TextInputType.text,
                   obscure: true,
-                  errorMessage: '',
+                  errorMessage:
+                      'Harap masukkan password anda ! minimal 8 karakter !',
                 ),
                 const SizedBox(height: 30),
                 SizedBox(
@@ -130,13 +131,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final ScaffoldMessengerState scaffoldMessengerState =
         ScaffoldMessenger.of(context);
     final userProvider = context.read<UserProvider>();
-    await userProvider.registerUser(
-      nameController.text,
-      emailController.text,
-      passwordController.text,
-    );
-    scaffoldMessengerState.showSnackBar(
-      SnackBar(content: Text(userProvider.message)),
-    );
+    if (formKey.currentState!.validate()) {
+      await userProvider.registerUser(
+        nameController.text,
+        emailController.text,
+        passwordController.text,
+      );
+
+      if (userProvider.message == 'User created') {
+        widget.goLogin();
+      }
+      scaffoldMessengerState.showSnackBar(
+        SnackBar(content: Text(userProvider.message)),
+      );
+    }
   }
 }
