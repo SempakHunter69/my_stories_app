@@ -130,20 +130,10 @@ class _LoginScreenState extends State<LoginScreen> {
         emailController.text,
         passwordController.text,
       );
-      //check if login was success
       if (userProvider.loginRespose?.loginResult.token != null) {
         widget.onLogin();
-        // Save token and show success message
-        // Print the token for debugging
-        print(
-            "Received token: ${userProvider.loginRespose!.loginResult.token}");
-
-        // Save the token
         preferencesProvider
             .saveToken(userProvider.loginRespose!.loginResult.token);
-
-        // Print a confirmation message
-        print("Token saved");
         scaffoldMessengerState.showSnackBar(
           SnackBar(content: Text(userProvider.message)),
         );

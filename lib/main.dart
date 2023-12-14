@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:my_stories_app/common/styles.dart';
 import 'package:my_stories_app/data/api/api_service.dart';
 import 'package:my_stories_app/data/preferences/preferences_helper.dart';
+import 'package:my_stories_app/provider/navigation_provider.dart';
 import 'package:my_stories_app/provider/preferences_provider.dart';
 import 'package:my_stories_app/provider/story_provider.dart';
 import 'package:my_stories_app/provider/user_provider.dart';
@@ -61,7 +62,10 @@ class _MyAppState extends State<MyApp> {
             preferencesProvider:
                 Provider.of<PreferencesProvider>(context, listen: false),
           ),
-        )
+        ),
+        ChangeNotifierProvider(
+          create: (context) => NavigationProvider(),
+        ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

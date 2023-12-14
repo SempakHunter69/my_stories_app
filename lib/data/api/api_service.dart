@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:my_stories_app/data/model/login_response.dart';
 import 'package:my_stories_app/data/model/register_response.dart';
 import 'package:http/http.dart' as http;
 import 'package:my_stories_app/data/model/stories_response.dart';
+import 'package:my_stories_app/data/model/upload_response.dart';
 
 class ApiService {
   static const baseUrl = 'https://story-api.dicoding.dev/v1';
@@ -68,6 +70,47 @@ class ApiService {
       return StoriesDetailResponse.fromJson(json.decode(response.body));
     } else {
       throw ('Failed to fetch stories. Status code: ${response.statusCode}');
+    }
+  }
+
+  Future<UploadResponse> uploadDocument(
+    List<int> bytes,
+    String fileName,
+    String description,
+    String token,
+  ) async {
+    final uri = Uri.parse('$baseUrl/stories');
+    var request = http.MultipartRequest('POST', uri);
+    final multiPartFile = http.MultipartFile.fromBytes(
+      "photo",
+      bytes,
+      filename: fileName,
+    );
+    final Map<String, String> fields = {
+      "description": description,
+    };
+    final Map<String, String> headers = {
+      "Content-type": "multipart/form-data",
+      'Authorization': 'Bearer $token',
+    };
+
+    request.files.add(multiPartFile);
+    request.fields.addAll(fields);
+    request.headers.addAll(headers);
+
+    final http.StreamedResponse streamedResponse = await request.send();
+    final int statusCode = streamedResponse.statusCode;
+
+    final Uint8List responseList = await streamedResponse.stream.toBytes();
+    final String responseData = String.fromCharCodes(responseList);
+
+    if (statusCode == 201) {
+      final UploadResponse uploadResponse = UploadResponse.fromJson(
+        responseData,
+      );
+      return uploadResponse;
+    } else {
+      throw Exception("Upload file error");
     }
   }
 }

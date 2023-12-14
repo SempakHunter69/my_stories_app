@@ -43,12 +43,10 @@ class UserProvider extends ChangeNotifier {
       loginRespose = await apiService.loginUser(email, password);
       message = loginRespose?.message ?? 'Success';
       isLogin = false;
-      print(message);
       notifyListeners();
     } catch (e) {
       isLogin = false;
       message = e.toString();
-      print(message);
       notifyListeners();
     }
   }

@@ -3,8 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:my_stories_app/common/styles.dart';
 import 'package:my_stories_app/data/model/stories_response.dart';
+import 'package:my_stories_app/provider/navigation_provider.dart';
 import 'package:my_stories_app/provider/preferences_provider.dart';
 import 'package:my_stories_app/provider/story_provider.dart';
+import 'package:my_stories_app/screens/profile_screen.dart';
+import 'package:my_stories_app/screens/upload_screen.dart';
 import 'package:my_stories_app/utils/result_state.dart';
 import 'package:my_stories_app/widgets/cardstory_widget.dart';
 import 'package:provider/provider.dart';
@@ -25,14 +28,15 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
+    final navigationProvider = Provider.of<NavigationProvider>(context);
     final List<BottomNavigationBarItem> bottomNavItems = [
       const BottomNavigationBarItem(
         icon: Icon(Icons.home),
         label: 'Home',
       ),
       const BottomNavigationBarItem(
-        icon: Icon(Icons.chat_bubble),
-        label: 'Chat',
+        icon: Icon(Icons.file_upload_outlined),
+        label: 'Upload',
       ),
       const BottomNavigationBarItem(
         icon: Icon(Icons.person),
@@ -48,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
       }
     }
 
-    Widget _buildList(BuildContext context) {
+    Widget buildList(BuildContext context) {
       return Consumer<StoryProvider>(builder: (context, state, _) {
         if (state.state == ResultState.loading) {
           return const Center(child: CircularProgressIndicator());
@@ -103,11 +107,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   : const Icon(Icons.logout)),
         ],
       ),
-      body: _buildList(context),
+      body: IndexedStack(
+        index: navigationProvider.currentIndex,
+        children: [
+          buildList(context),
+          const UploadScreen(),
+          const ProfileScreen(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
+        currentIndex: navigationProvider.currentIndex,
         items: bottomNavItems,
         selectedItemColor: Colors.black,
         unselectedItemColor: Colors.grey[400],
+        onTap: (index) => navigationProvider.currentIndex = index,
       ),
     );
   }
