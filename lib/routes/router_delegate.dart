@@ -4,6 +4,7 @@ import 'package:my_stories_app/data/preferences/preferences_helper.dart';
 import 'package:my_stories_app/screens/detail_screen.dart';
 import 'package:my_stories_app/screens/home_screen.dart';
 import 'package:my_stories_app/screens/login_screen.dart';
+import 'package:my_stories_app/screens/map_screen.dart';
 import 'package:my_stories_app/screens/onboarding_screen.dart';
 import 'package:my_stories_app/screens/register_screen.dart';
 import 'package:my_stories_app/screens/splash_screen.dart';
@@ -27,6 +28,7 @@ class MyRouterDelegate extends RouterDelegate
   bool? isLogIn = false;
   bool _isOnboarding = false;
   bool isHome = false;
+  bool selectLocation = false;
   List<Page> historyStack = [];
   Story? selectedStory;
 
@@ -84,13 +86,30 @@ class MyRouterDelegate extends RouterDelegate
             selectedStory = storyId;
             notifyListeners();
           },
+          selectLocation: () {
+            selectLocation = true;
+            notifyListeners();
+          },
           key: const ValueKey('HomeScreen'),
         )),
         if (selectedStory != null)
           MaterialPage(
               child: DetailScreen(
             story: selectedStory!,
-          ))
+          )),
+        if (selectLocation)
+          MaterialPage(
+            child: MapScreen(
+              backToUploadScreen: () {
+                selectLocation = false;
+                notifyListeners();
+              },
+              onSave: () {
+                selectLocation = false;
+                notifyListeners();
+              },
+            ),
+          ),
       ];
 
   set isOnboarding(bool value) {
@@ -121,6 +140,7 @@ class MyRouterDelegate extends RouterDelegate
         }
         isRegister = false;
         selectedStory = null;
+        selectLocation = false;
         notifyListeners();
         return true;
       },

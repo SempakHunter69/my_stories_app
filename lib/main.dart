@@ -6,6 +6,7 @@ import 'package:my_stories_app/provider/navigation_provider.dart';
 import 'package:my_stories_app/provider/preferences_provider.dart';
 import 'package:my_stories_app/provider/story_provider.dart';
 import 'package:my_stories_app/provider/user_provider.dart';
+import 'package:my_stories_app/routes/page_manager.dart';
 import 'package:my_stories_app/routes/router_delegate.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,6 +67,9 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(
           create: (context) => NavigationProvider(),
         ),
+        ChangeNotifierProvider(
+          create: (context) => PageManager(),
+        )
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

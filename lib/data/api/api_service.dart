@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:http/http.dart' as http;
 import 'package:my_stories_app/data/model/login_response.dart';
 import 'package:my_stories_app/data/model/register_response.dart';
-import 'package:http/http.dart' as http;
 import 'package:my_stories_app/data/model/stories_response.dart';
 import 'package:my_stories_app/data/model/upload_response.dart';
 
@@ -48,9 +48,13 @@ class ApiService {
     }
   }
 
-  Future<StoriesResponse> fetchStories(String token) async {
+  Future<StoriesResponse> fetchStories(
+    String token, [
+    int page = 1,
+    int size = 10,
+  ]) async {
     final response = await http.get(
-      Uri.parse('$baseUrl/stories'),
+      Uri.parse('$baseUrl/stories?page=$page&size=$size'),
       headers: {'Authorization': 'Bearer $token'},
     );
     if (response.statusCode == 200) {

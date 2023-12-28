@@ -134,6 +134,7 @@ class _LoginScreenState extends State<LoginScreen> {
         widget.onLogin();
         preferencesProvider
             .saveToken(userProvider.loginRespose!.loginResult.token);
+        // print('token' + userProvider.loginRespose!.loginResult.token);
         scaffoldMessengerState.showSnackBar(
           SnackBar(content: Text(userProvider.message)),
         );

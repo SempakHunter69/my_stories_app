@@ -15,10 +15,12 @@ import 'package:provider/provider.dart';
 class HomeScreen extends StatefulWidget {
   final Function(Story) onTapped;
   final Function() isLogout;
+  final Function() selectLocation;
   const HomeScreen({
     super.key,
     required this.isLogout,
     required this.onTapped,
+    required this.selectLocation,
   });
 
   @override
@@ -26,6 +28,30 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final ScrollController scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    final storyProvider = context.read<StoryProvider>();
+    scrollController.addListener(() {
+      if (scrollController.position.pixels >=
+          scrollController.position.maxScrollExtent) {
+        if (storyProvider.pageItems != null) {
+          storyProvider.fetchAllStories();
+        }
+      }
+    });
+
+    Future.microtask(() async => storyProvider.fetchAllStories());
+  }
+
+  @override
+  void dispose() {
+    scrollController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final navigationProvider = Provider.of<NavigationProvider>(context);
@@ -58,10 +84,21 @@ class _HomeScreenState extends State<HomeScreen> {
           return const Center(child: CircularProgressIndicator());
         } else if (state.state == ResultState.hasData) {
           return ListView.builder(
+            controller: scrollController,
             shrinkWrap: true,
-            itemCount: state.result.listStory.length,
+            itemCount: state.result.listStory.length +
+                (state.pageItems != null ? 1 : 0),
             itemBuilder: (context, index) {
-              var stories = state.result.listStory[index];
+              if (index == state.result.listStory.length &&
+                  state.pageItems != null) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(8),
+                    child: CircularProgressIndicator(),
+                  ),
+                );
+              }
+              final stories = state.result.listStory[index];
               return InkWell(
                   onTap: () {
                     Provider.of<StoryProvider>(context, listen: false)
@@ -111,7 +148,9 @@ class _HomeScreenState extends State<HomeScreen> {
         index: navigationProvider.currentIndex,
         children: [
           buildList(context),
-          const UploadScreen(),
+          UploadScreen(
+            selectLocation: widget.selectLocation,
+          ),
           const ProfileScreen(),
         ],
       ),

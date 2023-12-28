@@ -1,12 +1,13 @@
-import 'package:image/image.dart' as img;
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
+import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:my_stories_app/data/api/api_service.dart';
 import 'package:my_stories_app/data/model/stories_response.dart';
 import 'package:my_stories_app/data/model/upload_response.dart';
 import 'package:my_stories_app/provider/preferences_provider.dart';
 import 'package:my_stories_app/utils/result_state.dart';
-import 'dart:typed_data';
 
 class StoryProvider extends ChangeNotifier {
   final ApiService apiService;
@@ -16,7 +17,7 @@ class StoryProvider extends ChangeNotifier {
     required this.apiService,
     required this.preferencesProvider,
   }) {
-    _fetchAllStories();
+    fetchAllStories();
   }
 
   late ResultState _state;
@@ -33,21 +34,36 @@ class StoryProvider extends ChangeNotifier {
   ResultState get state => _state;
   Story get story => _story;
 
-  Future<dynamic> _fetchAllStories() async {
+  int? pageItems = 1;
+  int sizeItems = 10;
+
+  Future<dynamic> fetchAllStories() async {
     try {
-      _state = ResultState.loading;
-      notifyListeners();
+      if (pageItems == 1) {
+        _state = ResultState.loading;
+        notifyListeners();
+      }
       final String? token = await preferencesProvider.getToken();
       if (token == null) {
         throw Exception('Token not found');
       }
-      final stories = await apiService.fetchStories(token);
+      final stories = await apiService.fetchStories(
+        token,
+        pageItems!,
+        sizeItems,
+      );
       if (stories.listStory.isEmpty) {
         _state = ResultState.noData;
         notifyListeners();
         return _message = 'No Stories';
       } else {
         _state = ResultState.hasData;
+        notifyListeners();
+        if (stories.listStory.length < sizeItems) {
+          pageItems = null;
+        } else {
+          pageItems = pageItems! + 1;
+        }
         notifyListeners();
         return _storiesResponse = stories;
       }

@@ -7,10 +7,16 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_stories_app/common/styles.dart';
 import 'package:my_stories_app/provider/story_provider.dart';
+import 'package:my_stories_app/routes/page_manager.dart';
 import 'package:provider/provider.dart';
 
 class UploadScreen extends StatelessWidget {
-  const UploadScreen({super.key});
+  final Function() selectLocation;
+
+  const UploadScreen({
+    super.key,
+    required this.selectLocation,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -100,33 +106,69 @@ class UploadScreen extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Text(
-                'Add your picture',
-                style: myTextTheme.subtitle2,
+                'Add your picture and select your location',
+                style: myTextTheme.subtitle2!.copyWith(
+                  color: textDarkGrey,
+                ),
               ),
               const SizedBox(height: 10),
-              context.watch<StoryProvider>().imagePath == null
-                  ? InkWell(
-                      onTap: () {
-                        onGalleryView();
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.all(17),
-                        width: 58,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: textDarkGrey),
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(8),
+              Row(
+                children: [
+                  context.watch<StoryProvider>().imagePath == null
+                      ? InkWell(
+                          onTap: () {
+                            onGalleryView();
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(17),
+                            width: 58,
+                            decoration: BoxDecoration(
+                              border: Border.all(color: textDarkGrey),
+                              borderRadius: const BorderRadius.all(
+                                Radius.circular(8),
+                              ),
+                            ),
+                            child: const Center(
+                              child: Icon(
+                                Icons.upload_file_outlined,
+                                color: textDarkGrey,
+                              ),
+                            ),
                           ),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.upload_file_outlined,
-                            color: textDarkGrey,
-                          ),
+                        )
+                      : showImage(),
+                  const SizedBox(width: 10),
+                  InkWell(
+                    onTap: () async {
+                      selectLocation();
+                      final dataString = await context
+                          .read<PageManager<String>>()
+                          .waitForResult();
+                      final scaffoldMessengerState =
+                          ScaffoldMessenger.of(context);
+                      scaffoldMessengerState.showSnackBar(
+                        SnackBar(content: Text("My location is $dataString")),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(17),
+                      width: 58,
+                      decoration: BoxDecoration(
+                        border: Border.all(color: textDarkGrey),
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(8),
                         ),
                       ),
-                    )
-                  : showImage(),
+                      child: const Center(
+                        child: Icon(
+                          Icons.location_on,
+                          color: textDarkGrey,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
               const SizedBox(height: 20),
               Container(
                 padding: const EdgeInsets.all(16),
