@@ -27,6 +27,8 @@ class StoryProvider extends ChangeNotifier {
   String? imagePath;
   XFile? imageFile;
   bool isUploading = false;
+  bool isLocationSelected = false;
+  String? selectedLocation;
   UploadResponse? uploadResponse;
 
   String get message => _message;
@@ -107,6 +109,8 @@ class StoryProvider extends ChangeNotifier {
     Uint8List bytes,
     String fileName,
     String description,
+    double? latitude,
+    double? longitude,
   ) async {
     try {
       _message = '';
@@ -118,9 +122,17 @@ class StoryProvider extends ChangeNotifier {
         throw Exception('Token not found');
       }
       uploadResponse = await apiService.uploadDocument(
-          Uint8List.fromList(bytes), fileName, description, token);
-      _message = uploadResponse?.message ?? 'success';
+        Uint8List.fromList(bytes),
+        fileName,
+        description,
+        token,
+        latitude,
+        longitude,
+      );
+      _message = uploadResponse?.message ?? 'Success';
       isUploading = false;
+      selectedLocation = null;
+      isLocationSelected = false;
       notifyListeners();
     } catch (e) {
       isUploading = false;
@@ -174,5 +186,11 @@ class StoryProvider extends ChangeNotifier {
     } while (length > 1000000);
 
     return newByte;
+  }
+
+  void setLocationSelected(bool isSelected, String location) {
+    isLocationSelected = isSelected;
+    selectedLocation = location;
+    notifyListeners();
   }
 }

@@ -9,18 +9,20 @@ import 'package:my_stories_app/provider/story_provider.dart';
 import 'package:my_stories_app/screens/profile_screen.dart';
 import 'package:my_stories_app/screens/upload_screen.dart';
 import 'package:my_stories_app/utils/result_state.dart';
-import 'package:my_stories_app/widgets/cardstory_widget.dart';
+import 'package:my_stories_app/widgets/story_widget.dart';
 import 'package:provider/provider.dart';
 
 class HomeScreen extends StatefulWidget {
   final Function(Story) onTapped;
   final Function() isLogout;
   final Function() selectLocation;
+  final Function(double lat, double lon) cekLokasi;
   const HomeScreen({
     super.key,
     required this.isLogout,
     required this.onTapped,
     required this.selectLocation,
+    required this.cekLokasi,
   });
 
   @override
@@ -83,30 +85,37 @@ class _HomeScreenState extends State<HomeScreen> {
         if (state.state == ResultState.loading) {
           return const Center(child: CircularProgressIndicator());
         } else if (state.state == ResultState.hasData) {
-          return ListView.builder(
-            controller: scrollController,
-            shrinkWrap: true,
-            itemCount: state.result.listStory.length +
-                (state.pageItems != null ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == state.result.listStory.length &&
-                  state.pageItems != null) {
-                return const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(8),
-                    child: CircularProgressIndicator(),
-                  ),
-                );
-              }
-              final stories = state.result.listStory[index];
-              return InkWell(
-                  onTap: () {
-                    Provider.of<StoryProvider>(context, listen: false)
-                        .fetchStoryDetails(stories.id);
-                    widget.onTapped(stories);
-                  },
-                  child: CardStory(story: stories));
+          return RefreshIndicator(
+            onRefresh: () async {
+              await state.fetchAllStories();
             },
+            child: ListView.builder(
+              controller: scrollController,
+              shrinkWrap: true,
+              itemCount: state.result.listStory.length +
+                  (state.pageItems != null ? 1 : 0),
+              itemBuilder: (context, index) {
+                if (index == state.result.listStory.length &&
+                    state.pageItems != null) {
+                  return const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+                final stories = state.result.listStory[index];
+                return InkWell(
+                    onTap: () {
+                      Provider.of<StoryProvider>(context, listen: false)
+                          .fetchStoryDetails(stories.id);
+                      widget.onTapped(stories);
+                    },
+                    child: StoryWidget(
+                      story: stories,
+                    ));
+              },
+            ),
           );
         } else if (state.state == ResultState.noData) {
           return const Center(

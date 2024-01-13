@@ -82,6 +82,8 @@ class ApiService {
     String fileName,
     String description,
     String token,
+    double? latitude,
+    double? longitude,
   ) async {
     final uri = Uri.parse('$baseUrl/stories');
     var request = http.MultipartRequest('POST', uri);
@@ -93,6 +95,12 @@ class ApiService {
     final Map<String, String> fields = {
       "description": description,
     };
+    if (latitude != null && longitude != null) {
+      fields.addAll({
+        "lat": latitude.toString(),
+        "lon": longitude.toString(),
+      });
+    }
     final Map<String, String> headers = {
       "Content-type": "multipart/form-data",
       'Authorization': 'Bearer $token',

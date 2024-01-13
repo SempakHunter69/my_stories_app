@@ -4,8 +4,12 @@ import 'package:my_stories_app/widgets/cardstory_widget.dart';
 
 class DetailScreen extends StatelessWidget {
   final Story story;
-
-  const DetailScreen({super.key, required this.story});
+  final Function(double lat, double lon) cekLokasi;
+  const DetailScreen({
+    super.key,
+    required this.story,
+    required this.cekLokasi,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,7 +17,11 @@ class DetailScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Story Details'),
       ),
-      body: SingleChildScrollView(child: CardStory(story: story)),
+      body: SingleChildScrollView(
+          child: CardStory(
+        story: story,
+        cekLokasiUser: cekLokasi,
+      )),
     );
   }
 }

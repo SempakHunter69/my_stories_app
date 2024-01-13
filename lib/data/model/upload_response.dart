@@ -1,5 +1,10 @@
 import 'dart:convert';
 
+import 'package:json_annotation/json_annotation.dart';
+
+part 'upload_response.g.dart';
+
+@JsonSerializable()
 class UploadResponse {
   final bool error;
   final String message;
@@ -17,5 +22,5 @@ class UploadResponse {
   }
 
   factory UploadResponse.fromJson(String source) =>
-      UploadResponse.fromMap(json.decode(source));
+      _$UploadResponseFromJson(json.decode(source));
 }

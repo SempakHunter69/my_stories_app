@@ -48,6 +48,9 @@ class _MyAppState extends State<MyApp> {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
+          create: (context) => PageManager<String>(),
+        ),
+        ChangeNotifierProvider(
           create: (context) => UserProvider(ApiService()),
         ),
         ChangeNotifierProvider(
@@ -67,9 +70,6 @@ class _MyAppState extends State<MyApp> {
         ChangeNotifierProvider(
           create: (context) => NavigationProvider(),
         ),
-        ChangeNotifierProvider(
-          create: (context) => PageManager(),
-        )
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

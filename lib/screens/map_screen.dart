@@ -45,13 +45,23 @@ class _MapScreenState extends State<MapScreen> {
         actions: [
           IconButton(
             onPressed: () {
+              final ScaffoldMessengerState scaffoldMessengerState =
+                  ScaffoldMessenger.of(context);
               if (selectedLocation != null) {
-                final locationString =
-                    "${selectedLocation!.latitude}, ${selectedLocation!.longitude}";
-                context.read<PageManager<String>>().returnData(locationString);
+                final pageManager =
+                    Provider.of<PageManager<String>>(context, listen: false);
+                String locationString =
+                    "${selectedLocation!.latitude},${selectedLocation!.longitude}";
+                pageManager.returnData(locationString);
                 widget.onSave();
+                // Call any additional functions if needed, such as closing the screen
               } else {
-                print('Location not selected yet');
+                scaffoldMessengerState.showSnackBar(
+                  const SnackBar(
+                    content: Text('Please select a location'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
               }
             },
             icon: const Icon(Icons.save),

@@ -4,6 +4,7 @@ import 'package:my_stories_app/data/preferences/preferences_helper.dart';
 import 'package:my_stories_app/screens/detail_screen.dart';
 import 'package:my_stories_app/screens/home_screen.dart';
 import 'package:my_stories_app/screens/login_screen.dart';
+import 'package:my_stories_app/screens/map_detail_screen.dart';
 import 'package:my_stories_app/screens/map_screen.dart';
 import 'package:my_stories_app/screens/onboarding_screen.dart';
 import 'package:my_stories_app/screens/register_screen.dart';
@@ -24,6 +25,8 @@ class MyRouterDelegate extends RouterDelegate
     notifyListeners();
   }
 
+  double? lat;
+  double? lon;
   bool isRegister = false;
   bool? isLogIn = false;
   bool _isOnboarding = false;
@@ -31,6 +34,14 @@ class MyRouterDelegate extends RouterDelegate
   bool selectLocation = false;
   List<Page> historyStack = [];
   Story? selectedStory;
+  String? cekUserLocation;
+
+  cekLokasiUser(double latitude, double longitude) {
+    latitude = selectedStory?.lat ?? 0;
+    longitude = selectedStory?.lon ?? 0;
+    cekUserLocation = '$latitude,$longitude';
+    notifyListeners();
+  }
 
   List<Page> get _splashStack => [
         const MaterialPage(
@@ -90,13 +101,16 @@ class MyRouterDelegate extends RouterDelegate
             selectLocation = true;
             notifyListeners();
           },
+          cekLokasi: cekLokasiUser,
           key: const ValueKey('HomeScreen'),
         )),
         if (selectedStory != null)
           MaterialPage(
-              child: DetailScreen(
-            story: selectedStory!,
-          )),
+            child: DetailScreen(
+              story: selectedStory!,
+              cekLokasi: cekLokasiUser,
+            ),
+          ),
         if (selectLocation)
           MaterialPage(
             child: MapScreen(
@@ -110,6 +124,13 @@ class MyRouterDelegate extends RouterDelegate
               },
             ),
           ),
+        if (cekUserLocation != null)
+          MaterialPage(
+            child: MapDetailScreen(
+              latitude: selectedStory?.lat ?? 0,
+              longitude: selectedStory?.lon ?? 0,
+            ),
+          )
       ];
 
   set isOnboarding(bool value) {
@@ -141,6 +162,7 @@ class MyRouterDelegate extends RouterDelegate
         isRegister = false;
         selectedStory = null;
         selectLocation = false;
+        cekUserLocation = null;
         notifyListeners();
         return true;
       },

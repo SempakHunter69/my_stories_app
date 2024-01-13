@@ -7,8 +7,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_stories_app/common/styles.dart';
 import 'package:my_stories_app/provider/story_provider.dart';
-import 'package:my_stories_app/routes/page_manager.dart';
 import 'package:provider/provider.dart';
+
+import '../routes/page_manager.dart';
 
 class UploadScreen extends StatelessWidget {
   final Function() selectLocation;
@@ -23,6 +24,7 @@ class UploadScreen extends StatelessWidget {
     final provider = context.read<StoryProvider>();
     final descriptionController = TextEditingController();
     final formKey = GlobalKey<FormState>();
+    String? locationData;
 
     onGalleryView() async {
       final isMacOS = defaultTargetPlatform == TargetPlatform.macOS;
@@ -35,6 +37,21 @@ class UploadScreen extends StatelessWidget {
         provider.setImagePath(pickedFile.path);
         provider.setImageFile(pickedFile);
       }
+    }
+
+    Widget showImage() {
+      final imagePath = context.read<StoryProvider>().imagePath;
+      return kIsWeb
+          ? Image.network(
+              imagePath.toString(),
+              fit: BoxFit.contain,
+              width: 50,
+            )
+          : Image.file(
+              File(imagePath.toString()),
+              fit: BoxFit.contain,
+              width: 50,
+            );
     }
 
     onUpload() async {
@@ -54,12 +71,41 @@ class UploadScreen extends StatelessWidget {
       final fileName = imageFile.name;
       final bytes = await imageFile.readAsBytes();
       final newBytes = await provider.compressImage(bytes);
+
       if (formKey.currentState!.validate()) {
-        await provider.upload(
-          newBytes,
-          fileName,
-          descriptionController.text,
-        );
+        locationData = provider.selectedLocation;
+        if (locationData != null && locationData!.contains(',')) {
+          final latLng = locationData!
+              .split(',')
+              .map((e) => double.tryParse(e.trim()))
+              .toList();
+          double? latitude = latLng[0];
+          double? longitude = latLng[1];
+
+          if (latitude == null || longitude == null) {
+            scaffoldMessengerState.showSnackBar(
+              const SnackBar(
+                content: Text('Something went wrong please try again'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else {
+            await provider.upload(
+              newBytes,
+              fileName,
+              descriptionController.text,
+              latitude,
+              longitude,
+            );
+          }
+        } else {
+          scaffoldMessengerState.showSnackBar(
+            const SnackBar(
+              content: Text('Please select a location'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       }
 
       if (provider.uploadResponse != null) {
@@ -69,19 +115,6 @@ class UploadScreen extends StatelessWidget {
       scaffoldMessengerState.showSnackBar(
         SnackBar(content: Text(provider.message)),
       );
-    }
-
-    Widget showImage() {
-      final imagePath = context.read<StoryProvider>().imagePath;
-      return kIsWeb
-          ? Image.network(
-              imagePath.toString(),
-              fit: BoxFit.contain,
-            )
-          : Image.file(
-              File(imagePath.toString()),
-              fit: BoxFit.contain,
-            );
     }
 
     return SingleChildScrollView(
@@ -141,14 +174,14 @@ class UploadScreen extends StatelessWidget {
                   InkWell(
                     onTap: () async {
                       selectLocation();
-                      final dataString = await context
-                          .read<PageManager<String>>()
-                          .waitForResult();
-                      final scaffoldMessengerState =
-                          ScaffoldMessenger.of(context);
-                      scaffoldMessengerState.showSnackBar(
-                        SnackBar(content: Text("My location is $dataString")),
-                      );
+                      final pageManager = Provider.of<PageManager<String>>(
+                          context,
+                          listen: false);
+                      locationData = await pageManager.waitForResult();
+                      if (locationData!.isNotEmpty) {
+                        provider.setLocationSelected(true, locationData!);
+                      }
+                      print('lokasi $locationData');
                     },
                     child: Container(
                       padding: const EdgeInsets.all(17),
@@ -159,10 +192,12 @@ class UploadScreen extends StatelessWidget {
                           Radius.circular(8),
                         ),
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Icon(
                           Icons.location_on,
-                          color: textDarkGrey,
+                          color: provider.isLocationSelected
+                              ? primaryYellow2
+                              : textDarkGrey,
                         ),
                       ),
                     ),
