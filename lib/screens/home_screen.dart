@@ -40,12 +40,12 @@ class _HomeScreenState extends State<HomeScreen> {
       if (scrollController.position.pixels >=
           scrollController.position.maxScrollExtent) {
         if (storyProvider.pageItems != null) {
-          storyProvider.fetchAllStories();
+          storyProvider.fetchStories();
         }
       }
     });
 
-    Future.microtask(() async => storyProvider.fetchAllStories());
+    Future.microtask(() async => storyProvider.fetchStories());
   }
 
   @override

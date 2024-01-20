@@ -58,6 +58,10 @@ class _MapDetailScreenState extends State<MapDetailScreen> {
                 final marker = Marker(
                   markerId: const MarkerId('source'),
                   position: userLocation,
+                  infoWindow: InfoWindow(
+                    title: street,
+                    snippet: address,
+                  ),
                 );
                 setState(() {
                   mapController = controller;

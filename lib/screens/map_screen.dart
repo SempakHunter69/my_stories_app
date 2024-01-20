@@ -91,6 +91,7 @@ class _MapScreenState extends State<MapScreen> {
                 final marker = Marker(
                   markerId: const MarkerId('source'),
                   position: dicodingOffice,
+                  infoWindow: InfoWindow(title: street, snippet: address),
                 );
                 setState(() {
                   mapController = controller;

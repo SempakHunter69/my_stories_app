@@ -27,7 +27,12 @@ class StoryWidget extends StatelessWidget {
             story.description,
             style: myTextTheme.subtitle1!.copyWith(color: Colors.grey),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 10),
+          Text(
+            story.createdAt.toString(),
+            style: myTextTheme.subtitle1!.copyWith(color: Colors.black),
+          ),
+          const SizedBox(height: 10),
           Image.network(story.photoUrl),
           const SizedBox(height: 20),
           Row(

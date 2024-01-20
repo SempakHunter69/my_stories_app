@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:my_stories_app/common/styles.dart';
+import 'package:my_stories_app/provider/navigation_provider.dart';
 import 'package:my_stories_app/provider/story_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -21,6 +22,7 @@ class UploadScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final navigationProvider = context.read<NavigationProvider>();
     final provider = context.read<StoryProvider>();
     final descriptionController = TextEditingController();
     final formKey = GlobalKey<FormState>();
@@ -97,6 +99,8 @@ class UploadScreen extends StatelessWidget {
               latitude,
               longitude,
             );
+            provider.fetchAllStories();
+            navigationProvider.currentIndex = 0;
           }
         } else {
           scaffoldMessengerState.showSnackBar(

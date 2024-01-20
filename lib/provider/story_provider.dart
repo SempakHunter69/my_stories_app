@@ -18,6 +18,7 @@ class StoryProvider extends ChangeNotifier {
     required this.preferencesProvider,
   }) {
     fetchAllStories();
+    fetchStories();
   }
 
   late ResultState _state;
@@ -41,19 +42,13 @@ class StoryProvider extends ChangeNotifier {
 
   Future<dynamic> fetchAllStories() async {
     try {
-      if (pageItems == 1) {
-        _state = ResultState.loading;
-        notifyListeners();
-      }
+      _state = ResultState.loading;
+      notifyListeners();
       final String? token = await preferencesProvider.getToken();
       if (token == null) {
         throw Exception('Token not found');
       }
-      final stories = await apiService.fetchStories(
-        token,
-        pageItems!,
-        sizeItems,
-      );
+      final stories = await apiService.fetchStories(token);
       if (stories.listStory.isEmpty) {
         _state = ResultState.noData;
         notifyListeners();
@@ -61,18 +56,46 @@ class StoryProvider extends ChangeNotifier {
       } else {
         _state = ResultState.hasData;
         notifyListeners();
-        if (stories.listStory.length < sizeItems) {
-          pageItems = null;
-        } else {
-          pageItems = pageItems! + 1;
-        }
-        notifyListeners();
         return _storiesResponse = stories;
       }
     } catch (e) {
       _state = ResultState.error;
+      print('$e');
       notifyListeners();
       return _message = 'Error $e';
+    }
+  }
+
+  Future<void> fetchStories() async {
+    try {
+      final String? token = await preferencesProvider.getToken();
+      if (token == null) {
+        throw Exception('Token not found');
+      }
+
+      final result =
+          await apiService.fetchStories(token, pageItems!, sizeItems);
+      if (pageItems == 1) {
+        _storiesResponse = result;
+      } else {
+        _storiesResponse.listStory.addAll(result.listStory);
+      }
+      if (result.listStory.length < sizeItems) {
+        pageItems = null;
+        notifyListeners();
+      } else {
+        pageItems = pageItems! + 1;
+        notifyListeners();
+      }
+      _state = _storiesResponse.listStory.isEmpty && pageItems == 1
+          ? ResultState.noData
+          : ResultState.hasData;
+      notifyListeners();
+    } catch (e) {
+      _state = ResultState.error;
+      print('$e');
+      notifyListeners();
+      _message = 'Error $e';
     }
   }
 
